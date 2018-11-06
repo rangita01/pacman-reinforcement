@@ -134,12 +134,11 @@ class QLearningAgent(ReinforcementAgent):
 class PacmanQAgent(QLearningAgent):
     "Exactly the same as QLearningAgent, but with different default parameters"
 
-    def __init__(self, epsilon=0.05,gamma=0.8,alpha=0.2, numTraining=0, **args):
+    def __init__(self, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, **args):
         """
         These default parameters can be changed from the pacman.py command line.
         For example, to change the exploration rate, try:
             python pacman.py -p PacmanQLearningAgent -a epsilon=0.1
-
         alpha    - learning rate
         epsilon  - exploration rate
         gamma    - discount factor
@@ -158,19 +157,19 @@ class PacmanQAgent(QLearningAgent):
         informs parent of action for Pacman.  Do not change or remove this
         method.
         """
-        action = QLearningAgent.getAction(self,state)
-        self.doAction(state,action)
+        action = QLearningAgent.getAction(self, state)
+        self.doAction(state, action)
         return action
 
 
 class ApproximateQAgent(PacmanQAgent):
     """
        ApproximateQLearningAgent
-
        You should only have to overwrite getQValue
        and update.  All other QLearningAgent functions
        should work as is.
     """
+
     def __init__(self, extractor='IdentityExtractor', **args):
         self.featExtractor = util.lookup(extractor, globals())()
         PacmanQAgent.__init__(self, **args)
@@ -185,14 +184,21 @@ class ApproximateQAgent(PacmanQAgent):
           where * is the dotProduct operator
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        attributes = self.featExtractor.getFeatures(state, action)
+        sum = 0
+        for j in attributes:
+            sum += attributes[j] * self.weights[j]
+        return sum
 
     def update(self, state, action, nextState, reward):
         """
            Should update your weights based on transition
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        variation = (reward + self.discount * self.getValue(nextState)) - self.getQValue(state, action)
+        feat = self.featExtractor.getFeatures(state, action)
+        for i in feat:
+            self.weights[i] = self.weights[i] + self.alpha * variation * feat[i]
 
     def final(self, state):
         "Called at the end of each game."
@@ -203,4 +209,11 @@ class ApproximateQAgent(PacmanQAgent):
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
             "*** YOUR CODE HERE ***"
-            pass
+            print "Approx Q-Learning"
+            print "Learn rate(alpha):{0}".format(self.alpha)
+            print "Discount rate(gamma):{0}".format(self.gamma)
+            print "Exploring rate(epsilon):{0}".format(self.epsilon)
+            print "Training episodes:{0}".format(self.numTraining)
+            print "Weights"
+            for i in features:
+                print "{0}:{1}".format(i, self.weights[i])
